@@ -2,6 +2,7 @@ CLUSTER  ?= skillpulse
 NAMESPACE ?= skillpulse
 BACKEND_IMAGE  ?= trainwithshubham/skillpulse-backend:latest
 FRONTEND_IMAGE ?= trainwithshubham/skillpulse-frontend:latest
+DB_IMAGE       ?= trainwithshubham/skillpulse-db:latest
 
 .PHONY: up down build load apply status logs mysql restart
 
@@ -14,13 +15,15 @@ up: ## One-shot: build images, create cluster, load images, apply manifests
 	@echo "  SkillPulse is live at http://localhost:8888"
 	@echo
 
-build: ## Build backend + frontend images for the host's architecture
+build: ## Build all images for the host's architecture
 	docker build -t $(BACKEND_IMAGE)  ./backend
 	docker build -t $(FRONTEND_IMAGE) ./frontend
+	docker build -t $(DB_IMAGE)       ./mysql
 
 load: ## Push built images into the kind node
 	kind load docker-image $(BACKEND_IMAGE)  --name $(CLUSTER)
 	kind load docker-image $(FRONTEND_IMAGE) --name $(CLUSTER)
+	kind load docker-image $(DB_IMAGE)       --name $(CLUSTER)
 
 apply: ## Apply manifests and wait for rollouts
 	kubectl apply -f k8s/00-namespace.yaml \
@@ -43,9 +46,10 @@ logs: ## Tail all three workloads at once
 mysql: ## Open a mysql shell into the StatefulSet pod
 	kubectl exec -it -n $(NAMESPACE) mysql-0 -- mysql -uskillpulse -pskillpulse123 skillpulse
 
-restart: ## Rebuild + reload images, roll backend + frontend
+restart: ## Rebuild + reload images, roll all services
 	$(MAKE) build
 	$(MAKE) load
 	kubectl rollout restart deployment/backend deployment/frontend -n $(NAMESPACE)
+	kubectl rollout restart statefulset/mysql -n $(NAMESPACE)
 	kubectl rollout status  deployment/backend  -n $(NAMESPACE) --timeout=120s
 	kubectl rollout status  deployment/frontend -n $(NAMESPACE) --timeout=60s

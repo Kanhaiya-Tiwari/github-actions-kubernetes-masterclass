@@ -39,3 +39,12 @@ jobs:
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME != '' && format('{0}/skillpulse-frontend:latest', secrets.DOCKERHUB_USERNAME) || 'skillpulse-frontend:latest' }}
             ${{ secrets.DOCKERHUB_USERNAME != '' && format('{0}/skillpulse-frontend:{1}', secrets.DOCKERHUB_USERNAME, github.sha) || format('skillpulse-frontend:{0}', github.sha) }}
+
+      - name: Build and push database
+        uses: docker/build-push-action@v7
+        with:
+          context: ./mysql
+          push: ${{ vars.DEPLOY_ENABLED == 'true' }}
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME != '' && format('{0}/skillpulse-db:latest', secrets.DOCKERHUB_USERNAME) || 'skillpulse-db:latest' }}
+            ${{ secrets.DOCKERHUB_USERNAME != '' && format('{0}/skillpulse-db:{1}', secrets.DOCKERHUB_USERNAME, github.sha) || format('skillpulse-db:{0}', github.sha) }}

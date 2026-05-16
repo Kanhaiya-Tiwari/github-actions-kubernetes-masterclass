@@ -22,6 +22,57 @@ resource "helm_release" "prometheus" {
   }
 
   set {
+    name  = "grafana.service.type"
+    value = "ClusterIP"
+  }
+
+  # Configure Grafana for sub-path /grafana
+  set {
+    name  = "grafana.grafana\\.ini.server.root_url"
+    value = "%(protocol)s://%(domain)s:%(http_port)s/grafana/"
+  }
+  set {
+    name  = "grafana.grafana\\.ini.server.serve_from_sub_path"
+    value = "true"
+  }
+
+  # Add Loki as a DataSource in Grafana automatically
+  set {
+    name  = "grafana.additionalDataSources[0].name"
+    value = "Loki"
+  }
+  set {
+    name  = "grafana.additionalDataSources[0].type"
+    value = "loki"
+  }
+  set {
+    name  = "grafana.additionalDataSources[0].url"
+    value = "http://loki:3100"
+  }
+  set {
+    name  = "grafana.additionalDataSources[0].access"
+    value = "proxy"
+  }
+
+  # Enable sidecars to automatically find dashboards and datasources
+  set {
+    name  = "grafana.sidecar.dashboards.enabled"
+    value = "true"
+  }
+  set {
+    name  = "grafana.ingress.enabled"
+    value = "true"
+  }
+  set {
+    name  = "grafana.ingress.ingressClassName"
+    value = "nginx"
+  }
+  set {
+    name  = "grafana.ingress.path"
+    value = "/grafana"
+  }
+
+  set {
     name  = "prometheus.prometheusSpec.podMonitorSelectorNilUsesHelmValues"
     value = "false"
   }

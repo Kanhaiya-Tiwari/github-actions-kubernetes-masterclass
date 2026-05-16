@@ -135,4 +135,29 @@ This file documents all the changes and optimizations made to the SkillPulse pro
 - **Gated Deployment**: Implemented an automated "Promotion" logic between environments to ensure production stability.
 - **Health Verification**: Before promoting to Production, the pipeline executes `argocd app wait` and `observability-check` on the Dev environment.
 - **Promotion Trigger**: The `deploy-prod` job is configured with a strict `needs: [check-dev-health]` dependency.
-- **Fail-Safe Mechanism**: If the Dev deployment fails its health check (e.g., pod crashes or metrics not flowing), the pipeline automatically blocks the Production deployment, acting as an automated "Circuit Breaker".
+### 28. One-Command Full Stack Automation
+- Developed `deploy.sh`, a unified orchestration script that manages the entire lifecycle from Terraform infrastructure to Kubernetes app deployment.
+- Integrated the script into Terraform using a `null_resource` and `local-exec` provisioner, making `terraform apply` a true "one-command" setup.
+
+### 29. Terraform Provider Hardening (Exec Auth)
+- Migrated from `aws_eks_cluster_auth` data source to the **AWS CLI Exec Plugin** for Kubernetes and Helm providers.
+- This ensures real-time, zero-failure token generation, eliminating the persistent `Unauthorized` errors during long-running deployments.
+
+### 30. Dynamic VPC Subnet Calculation
+- Refactored `vpc.tf` to use the `cidrsubnet()` function.
+- This allows the VPC to automatically calculate valid subnet ranges regardless of the environment's base CIDR (e.g., `10.0.0.0/16` vs `10.1.0.0/16`), preventing `InvalidSubnet.Range` errors.
+
+### 31. EKS Admin Access (Cluster Creator Permissions)
+- Enabled `enable_cluster_creator_admin_permissions = true` in the EKS module.
+- This ensures that the IAM user/entity running Terraform is automatically granted `system:masters` cluster-wide permissions, enabling the automated creation of namespaces and Helm releases.
+
+### 32. Unified Monitoring & Observability Integration
+- Configured **Grafana** to automatically discover and attach **Prometheus** and **Loki** as data sources.
+### 33. Production Ingress Architecture (Single LoadBalancer)
+- Migrated from multiple expensive AWS LoadBalancers to a centralized **Nginx Ingress Controller** (`ingress.tf`).
+- Provisioned a single Application-level entry point for the entire cluster, reducing costs and complexity.
+
+### 34. Path-Based Unified Routing
+- Implemented **Sub-path Routing** logic across all namespaces.
+- Configured ArgoCD and Grafana to serve from `/argocd` and `/grafana` respectively.
+- Deployed a unified Ingress resource (`k8s/skillpulse/ingress.yaml`) to map traffic from the single DNS to internal services.

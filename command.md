@@ -135,3 +135,54 @@ make apply
 # Check logs for all components
 make logs
 ```
+
+## Phase 9: Full Stack One-Command Deployment
+
+### 26. Complete Automation Script
+Use this script to deploy everything (Infra + Monitoring + App) in one go:
+```bash
+# Set execute permissions
+chmod +x deploy.sh
+
+# Run for Dev environment
+./deploy.sh dev
+
+# Run for Prod environment
+./deploy.sh prod
+```
+
+### 27. Manual Step-by-Step with New Fixes
+If you prefer running commands manually, follow this sequence:
+```bash
+# 1. Initialize with latest provider updates
+terraform init -upgrade
+
+# 2. Apply infrastructure (Automatically runs post-deploy script)
+terraform apply -auto-approve
+
+# 3. Verify Pods across all namespaces
+kubectl get pods -A
+```
+
+### 28. Accessing Unified Monitoring
+Once the deployment is complete, Prometheus and Loki are pre-attached:
+1. Get Grafana Password: `kubectl get secret --namespace monitoring prometheus-grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo`
+2. Port-forward Grafana: `kubectl port-forward svc/prometheus-grafana 3000:80 -n monitoring`
+3. Access at `http://localhost:3000`
+4. Go to **Explore** and select **Loki** to see logs, or use the pre-built Prometheus dashboards.
+
+## Phase 10: Production Ingress & Single URL Access
+
+### 29. Single LoadBalancer Entry Point
+Check your unified cluster entry point:
+```bash
+kubectl get svc ingress-nginx-controller -n kube-system -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
+```
+
+### 30. Service Access via Sub-paths
+Once you have the DNS from the command above, access services as follows:
+- **Main Frontend**: `http://<DNS>/`
+- **Grafana Monitoring**: `http://<DNS>/grafana`
+- **ArgoCD GitOps**: `http://<DNS>/argocd`
+
+*Note: All services are now ClusterIP for maximum security, only accessible via the Ingress LoadBalancer.*

@@ -94,3 +94,13 @@ This file documents all the changes and optimizations made to the SkillPulse pro
 - **`k8s/bootstrap/root.yaml`**: Created the master application that governs all other services.
 - **`k8s/argocd/`**: Established a dedicated directory for child applications (`core`, `mysql`, `skillpulse`).
 - Enabled centralized management, allowing a single manual apply of the `root-app` to trigger the deployment of the entire stack.
+
+### 19. Comprehensive Documentation
+- Integrated the **5-Step DevOps Strategy** into `docs/skillpulse-cicd-guide.md`.
+- Established a professional manifesto covering Containerization, IaC, Configuration Isolation, CI/CD Automation, and Observability.
+- Provided a clear technical roadmap for maintaining production-grade cloud environments.
+
+### 20. Implementation of the 5-Step DevOps Strategy
+- **Step 2 (IaC Segregation)**: Restructured the `terraform/` directory to separate `environments/dev` and `environments/prod` from the `modules/core` logic, implementing workspace-style directory segregation.
+- **Step 4 (CI/CD Automaton)**: Replaced `ci.yml` with a comprehensive `ci-cd.yml` workflow implementing branch-based deployments (`main`->Prod, `release`->Stage, `develop`->Dev) along with approval gates and discrete Build/Package/Deploy stages.
+- **Step 5 (Monitoring & Logging)**: Updated `monitoring.tf` to inject environment-specific tags into Promtail (`env=prod`, `env=dev`) and established strict Prometheus alerting thresholds (80% CPU for Prod, 95% CPU for Dev).

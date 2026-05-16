@@ -27,6 +27,46 @@ This document walks through exactly what was built, why each piece exists, and â
 
 ---
 
+# The DevOps Manifesto: A 5-Step Strategy for Professional Environments
+
+This project follows a professional 5-step roadmap designed to ensure stability, scalability, and security in production-grade cloud environments.
+
+### Step 1: Containerize the Application (Docker)
+**Ensure your application runs identically across all environments by packaging it into a container.**
+- **Create a Dockerfile**: We use standard, multi-stage Dockerfiles to package the application and its dependencies into a minimal footprint.
+- **Use Environment Variables**: Database URLs and API keys are never hardcoded. We use `process.env` (Node) or `os.environ` (Python/Go) to inject configurations dynamically at runtime.
+- **Build and Push**: Images are stored in professional registries like Amazon ECR or Docker Hub.
+
+### Step 2: Define Infrastructure as Code (Terraform)
+**Never create infrastructure manually in the cloud console.**
+- **Create Modular Code**: We use Terraform modules for networking (VPC), clusters (EKS), and databases.
+- **Directory Segregation**: Separate folders or workspaces are used to isolate environments (Dev, Stage, Prod) while calling the same root modules.
+- **Remote Backend**: State files are stored securely in AWS S3 with state locking via DynamoDB to prevent concurrent modifications.
+
+### Step 3: Isolate Configuration and Secrets
+**Keep environment configurations separate from your source code.**
+- **Configuration**: Managed via `.env` files, ConfigMaps, or external providers.
+- **Secrets Management**: Sensitive data is stored in AWS Secrets Manager or GitHub Secrets.
+- **Injection**: Secrets are fetched dynamically during runtime or injected via the CI/CD pipeline to avoid exposure.
+
+### Step 4: Automate with CI/CD Pipelines (GitHub Actions)
+**Create a pipeline that automatically triggers, tests, and deploys based on your Git branching strategy.**
+- **Git Strategy**:
+  - `main` branch auto-deploys to Production.
+  - `release` branch auto-deploys to Staging.
+  - `develop` branch auto-deploys to Development.
+- **Pipeline Stages**:
+  - **Build**: Runs linting and unit tests.
+  - **Package**: Builds the Docker image and tags it with the Git commit SHA.
+  - **Deploy**: Deploys the validated image to the respective environment.
+
+### Step 5: Implement Monitoring and Logging (Grafana / Loki)
+**Track environment health separately to avoid mixed data logs.**
+- **Log Tagging**: Centralized logging using AWS CloudWatch or Grafana Loki, with every entry tagged by environment (e.g., `env=production`).
+- **Alerting**: Strict thresholds for Production (e.g., CPU > 80% triggers a page) while keeping Dev thresholds relaxed for development flexibility.
+
+---
+
 \newpage
 
 # Part 1 â€” The Big Picture

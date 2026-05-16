@@ -30,3 +30,9 @@ variable "node_instance_type" {
   type        = string
   default     = "t3.medium"
 }
+
+variable "environment" {
+  description = "The deployment environment (dev, stage, prod)."
+  type        = string
+  default     = "dev"
+}

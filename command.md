@@ -97,6 +97,29 @@ kubectl apply -f k8s/bootstrap/root.yaml
 # 20. Access ArgoCD UI (get password)
 kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d; echo
 ```
+
+## Phase 7: DevSecOps & Security Tools (Local Run)
+```bash
+# 21. Run Gitleaks locally to scan for secrets
+gitleaks detect --source . -v
+
+# 22. Run Checkov locally for Infrastructure scan
+checkov -d terraform/ --framework terraform
+
+# 23. Run Trivy locally to scan Docker image
+trivy image 815210276744.dkr.ecr.eu-west-1.amazonaws.com/skillpulse-backend:latest
+```
+
+## Phase 8: Operational Tasks
+```bash
+# 24. Run Production Backup manually
+chmod +x ./scripts/backup.sh
+./scripts/backup.sh
+
+# 25. Check Environment Health via Prometheus
+# (Port-forward to access Prometheus UI locally)
+kubectl port-forward svc/prometheus-stack-kube-prom-prometheus 9090 -n monitoring
+```
 ```
 ```
 

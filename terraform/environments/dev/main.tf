@@ -5,6 +5,6 @@ module "core" {
   project_name       = "skillpulse-dev"
   vpc_cidr           = "10.1.0.0/16"
   cluster_version    = "1.31"
-  node_instance_type = "t3.medium"
+  node_instance_type = "c7i-flex.large"
   environment        = "dev"
 }

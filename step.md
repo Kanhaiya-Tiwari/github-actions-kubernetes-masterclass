@@ -101,6 +101,38 @@ This file documents all the changes and optimizations made to the SkillPulse pro
 - Provided a clear technical roadmap for maintaining production-grade cloud environments.
 
 ### 20. Implementation of the 5-Step DevOps Strategy
-- **Step 2 (IaC Segregation)**: Restructured the `terraform/` directory to separate `environments/dev` and `environments/prod` from the `modules/core` logic, implementing workspace-style directory segregation.
-- **Step 4 (CI/CD Automaton)**: Replaced `ci.yml` with a comprehensive `ci-cd.yml` workflow implementing branch-based deployments (`main`->Prod, `release`->Stage, `develop`->Dev) along with approval gates and discrete Build/Package/Deploy stages.
-- **Step 5 (Monitoring & Logging)**: Updated `monitoring.tf` to inject environment-specific tags into Promtail (`env=prod`, `env=dev`) and established strict Prometheus alerting thresholds (80% CPU for Prod, 95% CPU for Dev).
+- **Step 2 (IaC Segregation)**: Restructured the `terraform/` directory to separate `environments/dev` and `environments/prod` from the `modules/core` logic.
+- **Step 4 (CI/CD Automation)**: Replaced monolithic workflows with a modular **Orchestrator-based pipeline** (`devsecops-pipeline.yml`).
+- **Step 5 (Monitoring & Logging)**: Updated `monitoring.tf` to inject environment-specific tags into Promtail (`env=prod`, `env=dev`) and established strict Prometheus alerting thresholds.
+
+### 21. Modular DevSecOps Pipeline
+- Refactored CI/CD into 5+ reusable workflows: `security-scan.yml`, `iac-scan.yml`, `build-and-push.yml`, `gitops-update.yml`, `notify.yml`.
+- Integrated **Gitleaks** (Secrets), **GoSec** (SAST), **GoVulnCheck** (SCA), **Hadolint** (Lint), and **Trivy** (Container Security).
+- Switched notifications from Slack to **Gmail** for broader accessibility.
+
+### 22. Terraform & EKS Stability Fixes
+- Resolved `read: no route to host` IPv6 connectivity issues during `terraform init`.
+- Fixed "couldn't find resource" errors by refactoring `provider.tf` to use direct module outputs instead of `data` sources during initial cluster creation.
+
+### 23. High Availability (HA) & Reliability
+- **Horizontal Pod Autoscalers (HPA)**: Configured `12-hpa.yaml` to dynamically scale pods (2 to 5 replicas) based on CPU utilization, ensuring the app handles traffic spikes automatically.
+- **Pod Disruption Budgets (PDB)**: Implemented `13-pdb.yaml` with `minAvailable: 1`. This acts as a "Service Level Guarantee" during voluntary disruptions (like node upgrades or maintenance), ensuring that Kubernetes never shuts down all pods at once and always keeps at least one instance live for **Zero Downtime**.
+- **Modern Compute**: Updated all environment nodes to **`c7i-flex.large`** for state-of-the-art performance and reliability.
+
+### 24. Automatic Promotion Logic (Dev ➔ Prod)
+- Implemented a "Safe Release" gate: Any push to `main` branch first deploys to **Dev**, runs a **Health/Integrity Check**, and only promotes to **Prod** if the checks pass.
+
+### 25. Automated Backups & Disaster Recovery
+- Created a production-ready **`backup.sh`** script that exports manifests and database states to an immutable S3 vault.
+- Scheduled a daily **GitHub Actions CronJob** to automate the backup lifecycle.
+
+### 26. GitOps Communication Model (CI/CD to EKS)
+- **Decoupled Architecture**: GitHub Actions does not push directly to the EKS cluster. Instead, it follows the **Pull-based GitOps model**.
+- **The Flow**: GitHub Actions (CI) builds the image ➔ Pushes to Amazon ECR ➔ Updates the Kubernetes manifests in the Git repository.
+- **ArgoCD's Role**: ArgoCD, running inside the EKS cluster, acts as a "Controller" that continuously reconciles the state. It detects the manifest change in Git and pulls the new image from ECR into the cluster.
+
+### 27. Automated Health Verification & Environment Promotion
+- **Gated Deployment**: Implemented an automated "Promotion" logic between environments to ensure production stability.
+- **Health Verification**: Before promoting to Production, the pipeline executes `argocd app wait` and `observability-check` on the Dev environment.
+- **Promotion Trigger**: The `deploy-prod` job is configured with a strict `needs: [check-dev-health]` dependency.
+- **Fail-Safe Mechanism**: If the Dev deployment fails its health check (e.g., pod crashes or metrics not flowing), the pipeline automatically blocks the Production deployment, acting as an automated "Circuit Breaker".

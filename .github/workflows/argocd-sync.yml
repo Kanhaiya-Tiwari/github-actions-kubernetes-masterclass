@@ -1,0 +1,28 @@
+name: ArgoCD Sync
+on:
+  workflow_call:
+    inputs:
+      app_name:
+        required: true
+        type: string
+    secrets:
+      argocd_token:
+        required: true
+      argocd_server:
+        required: true
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install ArgoCD CLI
+        run: |
+          curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
+          sudo install -m 555 argocd-linux-amd64 /usr/local/bin/argocd
+          rm argocd-linux-amd64
+
+      - name: ArgoCD Sync and Wait
+        run: |
+          argocd login ${{ secrets.argocd_server }} --token ${{ secrets.argocd_token }} --grpc-web --insecure
+          argocd app sync ${{ inputs.app_name }}
+          argocd app wait ${{ inputs.app_name }} --timeout 300

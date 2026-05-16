@@ -1,0 +1,16 @@
+name: Infrastructure Scan
+on:
+  workflow_call:
+
+jobs:
+  iac-security:
+    name: Checkov Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Checkov
+        uses: bridgecrewio/checkov-action@master
+        with:
+          framework: terraform,kubernetes
+          soft_fail: true # Set to false for strict production enforcement
+          output_format: cli

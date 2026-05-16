@@ -1,0 +1,84 @@
+name: Production DevSecOps Multi-Stage Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+env:
+  AWS_REGION: "eu-west-1"
+  ECR_REGISTRY: "815210276744.dkr.ecr.eu-west-1.amazonaws.com"
+
+jobs:
+  security:
+    uses: ./.github/workflows/security-scan.yml
+
+  infrastructure:
+    uses: ./.github/workflows/iac-scan.yml
+
+  build-backend:
+    needs: [security, infrastructure]
+    uses: ./.github/workflows/build-and-push.yml
+    with:
+      image_name: "skillpulse-backend"
+      context: "./backend"
+      ecr_repository: "815210276744.dkr.ecr.eu-west-1.amazonaws.com"
+    secrets:
+      aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      aws_region: "eu-west-1"
+
+  build-frontend:
+    needs: [security, infrastructure]
+    uses: ./.github/workflows/build-and-push.yml
+    with:
+      image_name: "skillpulse-frontend"
+      context: "./frontend"
+      ecr_repository: "815210276744.dkr.ecr.eu-west-1.amazonaws.com"
+    secrets:
+      aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      aws_region: "eu-west-1"
+
+  deploy-dev:
+    if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main'
+    needs: [build-backend, build-frontend]
+    uses: ./.github/workflows/gitops-update.yml
+    with:
+      env: "dev"
+    secrets:
+      gh_token: ${{ secrets.GITHUB_TOKEN }}
+
+  check-dev-health:
+    needs: deploy-dev
+    uses: ./.github/workflows/observability-check.yml
+    with:
+      env: "dev"
+
+  deploy-prod:
+    if: (github.ref == 'refs/heads/main') && success()
+    needs: [check-dev-health]
+    uses: ./.github/workflows/gitops-update.yml
+    with:
+      env: "prod"
+    secrets:
+      gh_token: ${{ secrets.GITHUB_TOKEN }}
+
+  dast-scan:
+    needs: deploy-prod
+    if: always() && (needs.deploy-prod.result == 'success')
+    uses: ./.github/workflows/dast-scan.yml
+    with:
+      target_url: "https://skillpulse.tiwari.com" # Change to your actual prod URL
+
+  notify:
+    if: always()
+    needs: [deploy-dev, deploy-prod, dast-scan]
+    uses: ./.github/workflows/notify.yml
+    with:
+      status: ${{ contains(needs.*.result, 'failure') && 'failure' || 'success' }}
+      message: "Deployment for ${{ github.ref_name }} finished."
+    secrets:
+      mail_username: ${{ secrets.MAIL_USERNAME }}
+      mail_password: ${{ secrets.MAIL_PASSWORD }}

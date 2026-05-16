@@ -1,8 +1,8 @@
 CLUSTER  ?= skillpulse
 NAMESPACE ?= skillpulse
-BACKEND_IMAGE  ?= trainwithshubham/skillpulse-backend:latest
-FRONTEND_IMAGE ?= trainwithshubham/skillpulse-frontend:latest
-DB_IMAGE       ?= trainwithshubham/skillpulse-db:latest
+BACKEND_IMAGE  ?= 815210276744.dkr.ecr.eu-west-1.amazonaws.com/skillpulse-backend:latest
+FRONTEND_IMAGE ?= 815210276744.dkr.ecr.eu-west-1.amazonaws.com/skillpulse-frontend:latest
+DB_IMAGE       ?= 815210276744.dkr.ecr.eu-west-1.amazonaws.com/skillpulse-db:latest
 
 .PHONY: up down build load apply status logs mysql restart
 
@@ -26,10 +26,9 @@ load: ## Push built images into the kind node
 	kind load docker-image $(DB_IMAGE)       --name $(CLUSTER)
 
 apply: ## Apply manifests and wait for rollouts
-	kubectl apply -f k8s/00-namespace.yaml \
-	              -f k8s/10-mysql.yaml \
-	              -f k8s/20-backend.yaml \
-	              -f k8s/30-frontend.yaml
+	kubectl apply -f k8s/core/ \
+	              -f k8s/mysql/ \
+	              -f k8s/skillpulse/
 	kubectl rollout status statefulset/mysql    -n $(NAMESPACE) --timeout=180s
 	kubectl rollout status deployment/backend   -n $(NAMESPACE) --timeout=120s
 	kubectl rollout status deployment/frontend  -n $(NAMESPACE) --timeout=60s

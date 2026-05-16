@@ -51,6 +51,46 @@ This file documents all the changes and optimizations made to the SkillPulse pro
 - Added `image: ${DOCKERHUB_USERNAME}/skillpulse-db:latest` to the database service.
 - This ensures that `docker compose pull` can fetch the optimized image from Docker Hub during CD.
 
-### 11. Workflow Refinement
-- Verified that `cd.yml` and `cd-k8s.yml` are compatible with the new containerized architecture.
-- All services (Backend, Frontend, DB) now follow the same "Build once, deploy anywhere" pattern.
+### 12. Kubernetes Directory Restructuring (Ref: CloudKart)
+- Reorganized the `k8s/` directory into a modular structure.
+- **`k8s/core/`**: Infrastructure components (Namespace).
+- **`k8s/mysql/`**: Database-specific resources (Secrets, Service, StatefulSet).
+- **`k8s/skillpulse/`**: Application-specific resources (ConfigMap, Deployments, Services).
+- **`k8s/apps/`**: ArgoCD Application definitions for GitOps deployment.
+- Added descriptive headers and comments to all YAML manifests.
+- Updated `Makefile` to support recursive directory application.
+
+### 13. Manifest Comment Simplification
+- Refactored all Kubernetes YAML files to use a single-line descriptive comment at the top for better readability.
+- Removed redundant multi-line headers while preserving essential description of each resource.
+
+### 14. Amazon ECR Migration
+- Provisioned three new ECR repositories on AWS: `skillpulse-backend`, `skillpulse-frontend`, and `skillpulse-db`.
+- Migrated all Kubernetes manifests (`k8s/mysql/`, `k8s/skillpulse/`) to use the new ECR image URLs: `815210276744.dkr.ecr.eu-west-1.amazonaws.com/...`
+- Updated the `Makefile` to sync image build and load targets with the ECR registry.
+- Refactored the CI workflow (`.github/workflows/ci.yml`) to use `aws-actions/amazon-ecr-login` for automated pushes.
+
+### 15. Terraform Infrastructure Provisioning
+- Created a comprehensive Terraform suite in the `terraform/` directory.
+- **`vpc.tf`**: Automated provisioning of a production-grade VPC with NAT gateways.
+- **`eks.tf`**: Configured a managed Amazon EKS cluster with auto-scaling node groups.
+- **`argocd.tf`**: Integrated ArgoCD installation via Helm for automated GitOps.
+- **`variables.tf` & `outputs.tf`**: Standardized configuration and exposure of cluster endpoints.
+- Provided a dedicated README for infrastructure lifecycle management.
+
+### 16. Terraform Remote Backend & Locking
+- Provisioned an S3 bucket (`skillpulse-terraform-state-815210276744`) for remote state storage.
+- Provisioned a DynamoDB table (`skillpulse-terraform-lock`) for state locking to prevent concurrent modifications.
+- Configured the `backend "s3"` block in `provider.tf` to enable collaborative and secure infrastructure management.
+
+### 17. Monitoring & Observability Stack
+- Integrated the **Prometheus Community Stack** via Helm for cluster-wide metrics and Grafana dashboards.
+- Installed **Grafana Loki Stack** for centralized log aggregation and analysis.
+- Deployed the **OpenTelemetry Operator** to enable distributed tracing and advanced metrics collection.
+- Standardized all observability tools within the `monitoring` namespace for isolation.
+
+### 18. ArgoCD App-of-Apps Pattern
+- Implemented the professional **App-of-Apps** pattern for GitOps orchestration.
+- **`k8s/bootstrap/root.yaml`**: Created the master application that governs all other services.
+- **`k8s/argocd/`**: Established a dedicated directory for child applications (`core`, `mysql`, `skillpulse`).
+- Enabled centralized management, allowing a single manual apply of the `root-app` to trigger the deployment of the entire stack.

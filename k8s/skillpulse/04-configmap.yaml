@@ -1,0 +1,10 @@
+# Defines configuration parameters for the SkillPulse application.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: skillpulse-config
+  namespace: skillpulse
+data:
+  DB_HOST: "mysql"
+  DB_PORT: "3306"
+  PORT: "8080"

@@ -293,7 +293,7 @@ document.addEventListener('DOMContentLoaded', () => {
             messages.scrollTop = messages.scrollHeight;
 
             // Render bot typing state
-            const typingDiv = appendChatMessage('Thinking...', 'bot typing');
+            const typingDiv = appendChatMessage('<div class="typing-dots"><span></span><span></span><span></span></div>', 'bot typing');
 
             try {
                 const res = await fetch(`${API}/chat`, {
@@ -321,7 +321,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function appendChatMessage(text, type) {
         const div = document.createElement('div');
         div.className = `chat-message ${type}`;
-        div.innerHTML = escapeHtml(text).replace(/\n/g, '<br>');
+        if (type.includes('typing')) {
+            div.innerHTML = text;
+        } else {
+            div.innerHTML = escapeHtml(text).replace(/\n/g, '<br>');
+        }
         messages.appendChild(div);
         return div;
     }

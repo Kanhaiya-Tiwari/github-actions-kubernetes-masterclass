@@ -152,10 +152,10 @@ jobs:
           docker push ${{ env.ECR_REGISTRY }}/skillpulse-frontend:latest
 
   # -------------------------------------------------------------
-  # STAGE 3: GitOps CD Deployment (Dev Environment)
+  # STAGE 3: GitOps CD Deployment & Telemetry Verification (Dev)
   # -------------------------------------------------------------
   deploy-dev:
-    name: 🚀 GitOps Deploy to Dev Environment
+    name: 🚀 Deploy & Verify Dev Environment
     if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main'
     needs: [build-backend, build-frontend]
     runs-on: ubuntu-latest
@@ -179,14 +179,6 @@ jobs:
           git pull --rebase
           git push
 
-  # -------------------------------------------------------------
-  # STAGE 4: Automated Observability validation & Health Check
-  # -------------------------------------------------------------
-  verify-dev:
-    name: 🩺 Observability Telemetry Check (Dev)
-    needs: deploy-dev
-    runs-on: ubuntu-latest
-    steps:
       - name: Verify Metrics Availability
         run: |
           echo "Phase 6: Telemetry Injection Check for dev..."
@@ -204,12 +196,12 @@ jobs:
           echo "Integrity check: SUCCESS - OTel traces flowing to backend."
 
   # -------------------------------------------------------------
-  # STAGE 5: GitOps CD Deployment (Prod Environment)
+  # STAGE 4: GitOps CD Deployment & ZAP DAST Scan (Prod)
   # -------------------------------------------------------------
   deploy-prod:
-    name: 🚀 GitOps Deploy to Prod Environment
+    name: 🚀 Deploy & DAST Scan Prod Environment
     if: (github.ref == 'refs/heads/main') && success()
-    needs: [verify-dev]
+    needs: [deploy-dev]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -231,18 +223,6 @@ jobs:
           git pull --rebase
           git push
 
-  # -------------------------------------------------------------
-  # STAGE 6: Dynamic Application Security Testing (DAST)
-  # -------------------------------------------------------------
-  dast-scan:
-    name: 🌐 OWASP ZAP DAST Security Scan
-    needs: deploy-prod
-    if: always() && (needs.deploy-prod.result == 'success')
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
       - name: ZAP Scan
         uses: zaproxy/action-baseline@v0.11.0
         continue-on-error: true
@@ -251,12 +231,12 @@ jobs:
           fail_action: false
 
   # -------------------------------------------------------------
-  # STAGE 7: Multi-Channel Alert & Notifications
+  # STAGE 5: Multi-Channel Alert & Notifications
   # -------------------------------------------------------------
   notification:
     name: 📧 Dispatch Deployment Status Email
     if: always()
-    needs: [deploy-dev, deploy-prod, dast-scan]
+    needs: [deploy-dev, deploy-prod]
     runs-on: ubuntu-latest
     steps:
       - name: Send Mail Alert

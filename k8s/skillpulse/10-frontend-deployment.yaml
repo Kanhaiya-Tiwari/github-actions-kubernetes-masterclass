@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: 815210276744.dkr.ecr.eu-west-1.amazonaws.com/skillpulse-frontend:191cbf7d19550818ac56f74191e47f519a8113c8
+          image: 815210276744.dkr.ecr.eu-west-1.amazonaws.com/skillpulse-frontend:4614e0fdd36b82cdecc04affbf3a5f8c3549e5aa
           imagePullPolicy: IfNotPresent
           ports:
             - name: http

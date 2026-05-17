@@ -24,7 +24,7 @@ jobs:
 
       - name: GoSec (Backend SAST)
         run: |
-          GOSUMDB=off go install github.com/securego/gosec/v2/cmd/gosec@latest
+          GOSUMDB=off go install github.com/securego/gosec/v2/cmd/gosec@v2.21.4
           $(go env GOPATH)/bin/gosec -fmt=json -out=gosec-results.json ./backend/... || true
 
       - name: GoVulnCheck (SCA)

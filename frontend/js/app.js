@@ -256,3 +256,73 @@ document.querySelectorAll('.modal-backdrop').forEach(el => {
         }
     });
 });
+
+// AI Chatbot Functionality
+document.addEventListener('DOMContentLoaded', () => {
+    const toggleBtn = document.getElementById('chatbot-toggle');
+    const closeBtn = document.getElementById('chat-close');
+    const container = document.getElementById('chatbot-container');
+    const form = document.getElementById('chat-form');
+    const input = document.getElementById('chat-input');
+    const messages = document.getElementById('chat-messages');
+
+    if (toggleBtn && closeBtn && container && form && input && messages) {
+        toggleBtn.addEventListener('click', () => {
+            container.classList.toggle('active');
+            if (container.classList.contains('active')) {
+                input.focus();
+            }
+        });
+
+        closeBtn.addEventListener('click', () => {
+            container.classList.remove('active');
+        });
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const text = input.value.trim();
+            if (!text) return;
+
+            // Clear input
+            input.value = '';
+
+            // Render user message
+            appendChatMessage(text, 'user');
+
+            // Scroll to bottom
+            messages.scrollTop = messages.scrollHeight;
+
+            // Render bot typing state
+            const typingDiv = appendChatMessage('Thinking...', 'bot typing');
+
+            try {
+                const res = await fetch(`${API}/chat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: text }),
+                });
+
+                if (!res.ok) throw new Error('Failed to reach AI Assistant');
+                const data = await res.json();
+
+                // Remove typing and render actual response
+                typingDiv.remove();
+                appendChatMessage(data.response, 'bot');
+            } catch (err) {
+                console.error(err);
+                typingDiv.remove();
+                appendChatMessage('Sorry, I am having trouble connecting to my local LLM brain. Please make sure Ollama is running and has TinyLlama loaded.', 'bot');
+            }
+
+            messages.scrollTop = messages.scrollHeight;
+        });
+    }
+
+    function appendChatMessage(text, type) {
+        const div = document.createElement('div');
+        div.className = `chat-message ${type}`;
+        div.innerHTML = escapeHtml(text).replace(/\n/g, '<br>');
+        messages.appendChild(div);
+        return div;
+    }
+});

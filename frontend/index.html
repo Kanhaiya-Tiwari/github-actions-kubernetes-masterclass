@@ -120,6 +120,24 @@
     <!-- Toast -->
     <div id="toast" class="toast"></div>
 
+    <!-- AI Chatbot Toggle & Window -->
+    <button class="chatbot-toggle" id="chatbot-toggle" aria-label="Open AI Assistant">🤖</button>
+    <div class="chatbot-container" id="chatbot-container">
+        <div class="chat-header">
+            <h3><span class="status-dot"></span> SkillPulse AI Assistant</h3>
+            <button class="chat-close" id="chat-close">&times;</button>
+        </div>
+        <div class="chat-messages" id="chat-messages">
+            <div class="chat-message bot">
+                Hi! I'm SkillPulse AI, powered by TinyLlama. How can I help you with your learning goals or DevOps masterclass today?
+            </div>
+        </div>
+        <form class="chat-input-area" id="chat-form">
+            <input type="text" class="chat-input" id="chat-input" placeholder="Ask anything about Go, K8s, GitOps..." required autocomplete="off">
+            <button type="submit" class="chat-send">Send</button>
+        </form>
+    </div>
+
     <script src="js/app.js"></script>
 </body>
 </html>

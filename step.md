@@ -161,3 +161,21 @@ This file documents all the changes and optimizations made to the SkillPulse pro
 - Implemented **Sub-path Routing** logic across all namespaces.
 - Configured ArgoCD and Grafana to serve from `/argocd` and `/grafana` respectively.
 - Deployed a unified Ingress resource (`k8s/skillpulse/ingress.yaml`) to map traffic from the single DNS to internal services.
+
+### 35. Symmetrical Interconnected 3x3x3x3 Visual Pipeline DAG
+- Refactored the monolithic CI/CD pipeline into a visually stunning, symmetrical **3x3x3x3 DAG layout** in GitHub Actions.
+- **Stage 1 (Parallel Audits)**: Runs `Code Security & SAST (GoSec/GoVuln)`, `Code Lint & Secrets Scan (Gitleaks/Hadolint)`, and `Infrastructure Compliance (Checkov)` in parallel.
+- **Stage 2 (Parallel Artifacts & Tests)**: Compiles `Build Backend Service` and `Build Frontend Service` in parallel while running `Automated Application Smoke Test`.
+- **Stage 3 (Dev Promotion Gate)**: Triggers `Deploy Dev Manifests (GitOps)` followed immediately by parallel runs of `Verify Dev Telemetry` and `ZAP DAST Scan (Dev)`.
+- **Stage 4 (Prod Promotion Gate)**: Triggers `Deploy Prod Manifests (GitOps)` followed immediately by parallel runs of `ZAP DAST Scan (Prod)` and `Dispatch Deployment Status Email` alerts.
+
+### 36. OpenTelemetry Distributed Tracing Setup & Walkthrough
+- Documented complete setup details for OpenTelemetry auto-instrumentation using the active OpenTelemetry Operator in the EKS cluster.
+- Authored a comprehensive walkthrough guide for deploying **Grafana Tempo** as a trace storage backend, injecting the Go OTel agent SDK via Kubernetes Pod annotations, and exploring trace waterfalls under Grafana Explore.
+
+### 37. Dockerized Local AI Chatbot (Ollama TinyLlama)
+- Built a fully containerized, self-contained local environment in `docker-compose.yml` containing the Go Backend, MySQL, Nginx Frontend, and an Ollama service.
+- Configured a dedicated `ollama-setup` service that waits for Ollama to bootstrap and automatically downloads the official **`tinyllama`** model, eliminating manual setup.
+- Corrected the Go backend request payload to query the official `tinyllama` identifier.
+- Engineered a premium glassmorphism AI Chatbot widget 🤖 with HSL dark/light compatibility, entry animations, and responsive message bubbles.
+

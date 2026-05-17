@@ -34,6 +34,7 @@ services:
       DB_PASSWORD: ${DB_PASSWORD}
       DB_NAME: ${DB_NAME}
       PORT: "8080"
+      OLLAMA_URL: http://ollama:11434
   
     depends_on:
       db:
@@ -50,8 +51,29 @@ services:
     depends_on:
       - backend
 
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - skillpulse
+
+  ollama-setup:
+    image: curlimages/curl:latest
+    container_name: ollama-setup
+    networks:
+      - skillpulse
+    depends_on:
+      - ollama
+    entrypoint: [ "sh", "-c", "until curl -s http://ollama:11434/api/tags >/dev/null; do sleep 1; done; echo 'Pulling tinyllama...'; curl -X POST http://ollama:11434/api/pull -d '{\"name\": \"tinyllama\"}'" ]
+
 volumes:
   mysql_data:
+  ollama_data:
 
 networks:
   skillpulse:

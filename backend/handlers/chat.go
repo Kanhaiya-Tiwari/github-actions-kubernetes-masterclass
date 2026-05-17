@@ -38,7 +38,7 @@ func ChatHandler(c *gin.Context) {
 
 	// Prepare payload for Ollama
 	payload := OllamaRequest{
-		Model:  "tinylama",
+		Model:  "tinyllama",
 		Prompt: "You are a helpful learning assistant for the SkillPulse project. The user is asking about skills, coding, databases, or DevOps. Be highly professional, friendly, and concise in your response. Keep it to 2-3 sentences. User Query: " + req.Message,
 		Stream: false,
 	}

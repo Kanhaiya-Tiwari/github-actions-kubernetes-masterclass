@@ -11,6 +11,12 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+          cache: false
+
       - name: Gitleaks (Secrets Scan)
         uses: gitleaks/gitleaks-action@v2
         env:
@@ -18,13 +24,13 @@ jobs:
 
       - name: GoSec (Backend SAST)
         run: |
-          go install github.com/securego/gosec/v2/cmd/gosec@latest
-          gosec -fmt=json -out=gosec-results.json ./backend/... || true
+          GOSUMDB=off go install github.com/securego/gosec/v2/cmd/gosec@latest
+          $(go env GOPATH)/bin/gosec -fmt=json -out=gosec-results.json ./backend/... || true
 
       - name: GoVulnCheck (SCA)
         run: |
-          go install golang.org/x/vuln/cmd/govulncheck@latest
-          govulncheck ./backend/... || true
+          GOSUMDB=off go install golang.org/x/vuln/cmd/govulncheck@v1.1.3
+          $(go env GOPATH)/bin/govulncheck ./backend/... || true
 
       - name: Hadolint (Dockerfile Lint)
         uses: hadolint/hadolint-action@v3.1.0

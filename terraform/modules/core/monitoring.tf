@@ -115,6 +115,11 @@ resource "helm_release" "loki" {
     name  = "promtail.extraArgs[0]"
     value = "-client.external-labels=env=${var.environment}"
   }
+
+  set {
+    name  = "loki.isDefault"
+    value = "false"
+  }
 }
 
 # 3. OpenTelemetry Operator/Collector

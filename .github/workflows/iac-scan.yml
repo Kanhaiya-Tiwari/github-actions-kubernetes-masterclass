@@ -8,9 +8,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Run Checkov
-        uses: bridgecrewio/checkov-action@master
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          framework: terraform,kubernetes
-          soft_fail: true # Set to false for strict production enforcement
-          output_format: cli
+          python-version: '3.11'
+
+      - name: Install Checkov
+        run: pip install checkov
+
+      - name: Run Checkov
+        run: |
+          checkov -d . --framework terraform,kubernetes --soft-fail

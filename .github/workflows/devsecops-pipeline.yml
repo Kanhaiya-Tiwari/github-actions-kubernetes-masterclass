@@ -10,6 +10,9 @@ env:
   AWS_REGION: "eu-west-1"
   ECR_REGISTRY: "815210276744.dkr.ecr.eu-west-1.amazonaws.com"
 
+permissions:
+  contents: write
+
 jobs:
   security:
     uses: ./.github/workflows/security-scan.yml

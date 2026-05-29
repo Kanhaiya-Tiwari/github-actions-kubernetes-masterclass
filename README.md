@@ -187,8 +187,6 @@ Perfect for local API integration and frontend styling loops. Nginx reverse prox
 ```bash
 cp .env.example .env
 docker compose up -d --build
-# Open http://localhost
-```
 
 ### 2. Local Kubernetes Simulation (Kind)
 Test production manifests (HPA, PDB, ConfigMaps, Secrets, Services) on a multi-node Kubernetes cluster.

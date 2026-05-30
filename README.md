@@ -232,7 +232,6 @@ aws eks update-kubeconfig --region eu-west-1 --name skillpulse-dev
 │   └── environments/            # Target environments (Dev/Prod directories)
 └── README.md                    # System documentation
 ```
-
 ---
 
 ## 🏆 Credits & Mentorship

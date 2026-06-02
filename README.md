@@ -117,7 +117,6 @@ graph TD
    - Cron-triggered daily scheduled backups dumping cluster resource states and MySQL schemas to encrypted S3 buckets with complete automated email alerts.
 
 ---
-
 ## 🛡️ The 9-Stage Production DevSecOps Pipeline
 
 The GitHub Actions pipeline (`.github/workflows/devsecops-pipeline.yml`) acts as our automated security gatekeeper:
